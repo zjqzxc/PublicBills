@@ -6,7 +6,52 @@
 <link rel="stylesheet" href="jquery/jquery.mobile-1.4.5.min.css">
 <script src="jquery/jquery-1.11.3.min.js"></script>
 <script src="jquery/jquery.mobile-1.4.5.min.js"></script>
+<script>
+function addzero (value, length) {//时间日期前补‘0’
+  if (!length) length = 2;          
+  value = String(value);        
+  for (var i = 0, zeros = ''; i < (length - value.length); i++) {
+    zeros += '0';
+    }
+  return zeros + value;         
+};
+//日期减一天
+function dayminus(){
+  var date=$("#date")[0].value;
+  var arr=date.split("-");
+  date=arr[0]+"-"+arr[1]+"-"+addzero(Number(arr[2])-1);
+  $("#date").val(date);
+  $("#btn_dayminus").val("还在昨天").button("refresh"); 
+}
+//时间减去一小时
+function hoursminus(){
+  var time=$("#time")[0].value;
+  var arr=time.split(":");
+  time=addzero(Number(arr[0])-1)+":"+arr[1];
+  $("#time").val(time);
+  $("#btn_hoursminus").val("再早点儿").button("refresh");
+}
+//addone
+function addone(){
+  $.get("ajaxfunc.php",{ func: "addoneperson" },function(result){
+    $("#person").append(result).trigger('create');
+  });
+}
 
+window.onload = function() {
+  //get users
+  $.get("ajaxfunc.php",{ func: "gethtmluserlist" },function(result){
+    $("#user").html(result).trigger('create');
+  });
+  //默认付款人
+  addone();
+  //设置当前日期时间为默认值
+  var curr_time = new Date();
+  $("#date").val(curr_time.getFullYear()+"-"+addzero(curr_time.getMonth())+"-"+addzero(curr_time.getDate()));
+  $("#time").val(addzero(curr_time.getHours())+":"+addzero(curr_time.getMinutes()));
+}; 
+
+</script>
 </head>
 <body>
 
@@ -23,16 +68,89 @@
   </div>
 
 <div data-role="panel" id="mypanel" data-display="overlay" data-position="left">
-11111
-<a href="#demo-links" data-rel="close" data-role="button" data-theme="c" data-icon="delete" data-inline="true"> Close panel</a>
-    <!-- panel content goes here -->
+  <!-- panel content goes here -->
+  <div class="ui-alt-icon ui-nodisc-icon ui-listview">
+    <ul class="ui-listview" data-inset="true">
+      <li class="ui-first-child"><a href="#" class="ui-btn ui-btn-icon-right ui-icon-carat-r">123</a></li>
+      <li><a href="#" class="ui-btn ui-btn-icon-right ui-icon-carat-r">123</a></li>
+    </ul>
+  </div>
+  <a href="#demo-links" data-rel="close" data-role="button" data-theme="c" data-icon="delete" data-inline="true"> Close panel</a>
 </div>
 
+  <script>  
+        function onSuccess(data, status){  
+            data = $.trim(data);  
+            $("#notification").text(data);
+        }   
+        function onError(data, status){  
+            $("#notification").text("error");
+        } 
+        $(document).ready(function() {  
+            $("#submit").click(function(){
+                var formData = $("#callAjaxForm").serialize();
+                $.ajax({
+                    type: "POST",
+                    url: "show.php",
+                    cache: false,
+                    data: formData,
+                    success: onSuccess,
+                    error: onError
+                });
+                return false;
+            });
+        });
+  </script> 
   <div data-role="content">
-    <p>点击链接来查看滑动效果（从右向左滑动到下一页）</p>
-    <a href="#pagetwo" data-transition="flip">滑动到页面二</a>
+    <form id="callAjaxForm"> 
+      <label for="title" class="ui-hidden-accessible">Titile</label>
+      <input type="text" name="title" id="title" placeholder="都买啥了">
+      <label for="money" class="ui-hidden-accessible">Money</label>
+      <input type="text" name="money" id="money" placeholder="一共多少钱呀">
+      <label>有谁需要付钱呢</label>
+      <div id="user" class="ui-grid-b">
+        <!-- 样式示例 每行3个
+        <div class="ui-block-a">
+          <label for="red">红色</label>
+          <input type="checkbox" name="favcolor" id="red" value="red"  checked="checked" >
+        </div>
+        <div class="ui-block-b">
+          <label for="green">绿色</label>
+          <input type="checkbox" name="favcolor" id="green" value="green">
+        </div>
+        <div class="ui-block-c">
+          <label for="blue">蓝色</label>
+          <input type="checkbox" name="favcolor" id="blue" value="blue">
+        </div>
+        -->
+      </div>
+      <label for="date">啥时候的事儿
+        <input id="btn_dayminus" type="button" data-inline="true" value="昨天的事" data-mini="true" onclick="dayminus()">
+        <input id="btn_hoursminus" type="button" data-inline="true" value="一小时前" data-mini="true" onclick="hoursminus()">
+      </label>
+      <div class="ui-grid-a">
+        <div class="ui-block-a">
+            <input type="date" name="date" id="date">
+        </div>
+        <div class="ui-block-b">
+            <input type="time" name="time" id="time">
+        </div>
+      </div>
+      
+      <div id="person" class="ui-grid-a">
+        <div class="ui-block-a">付款人：</div>
+<!-- -->
+      </div>
+      
+      <input type="button" id="btn_addone" onclick="addone()" data-inline="true" value="还有人共同付款">
+      
+      <input type="submit" id="submit" data-inline="false" value="提交">
+
+    </form>
   </div>
 
+
+<h3 id="notification">数据回显：</h3>
   <div data-role="footer" data-position="fixed" data-fullscreen="true">
   <h1>页脚文本</h1>
   </div>
