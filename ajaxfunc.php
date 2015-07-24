@@ -37,6 +37,34 @@ case  'addoneperson':
         </div>
         ';
 	break;
+case 'appendrecord':
+  $txt='
+<form id="callAjaxForm"> 
+      <select name="title" id="title" data-native-menu="false">
+        <option value="mon">事件1</option>
+        <option value="tu1e">事件2</option>
+        <option value="wed">事件3</option>
+      </select>
+      
+      <label for="money" class="ui-hidden-accessible">Money</label>
+      <input type="text" name="money" id="money" placeholder="一共多少钱呀">      
+      <label for="date">
+        <input id="btn_dayminus" type="button" data-inline="true" value="昨天的事" data-mini="true" onclick="dayminus()">
+        <input id="btn_hoursminus" type="button" data-inline="true" value="一小时前" data-mini="true" onclick="hoursminus()">
+      </label>
+      <div class="ui-grid-a">
+        <div class="ui-block-a">
+            <input type="date" name="date" id="date">
+        </div>
+        <div class="ui-block-b">
+            <input type="time" name="time" id="time">
+        </div>
+      </div>
+      <input type="button" onclick="submit0()" id="submit" data-inline="false" value="提交">
+
+    </form>
+  '  ;
+  break;
 default:
 	$txt='Unknown Function！';
 }

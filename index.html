@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<link rel="stylesheet" href="jquery/jquery.mobile-1.4.5.min.css">
+<script src="jquery/jquery-1.11.3.min.js"></script>
+<script src="jquery/jquery.mobile-1.4.5.min.js"></script>
+<script src="main.js"></script>
+<script>
+  function login (){//提交按钮操作
+       showLoader();//显示加载器
+       var formData = $("#callAjaxForm").serialize();
+       $.ajax({
+         type: "POST",
+         url: "postdata.php",
+         cache: false,
+         data: formData,
+         success: onSuccess,
+         error: onError
+       });
+       return false;
+     }
+     
+  window.onload = function() {
+    if(getCookie('user')) { // 如果cookie中存在user，则视为记住密码已被已选中。并同时从中读取用户名及密码
+      $("#user").val(getCookie('user'));
+      $("#pwd").val(getCookie('pwd'));
+      $('#remberpwd').attr('checked',true).checkboxradio('refresh');
+    }
+    if(getCookie('autologin')== 'true') { //如果cookie中autologin值为true，则自动执行登陆操作
+      login();
+    }
+  }
+</script>
+</head>
+
+<body>
+	<div data-role="page">
+		<div data-role="header" data-position="fixed" data-fullscreen="false">
+			<h1>登陆</h1>
+		</div>
+	<script>
+    function al(){
+      alert(000);
+    }
+	function onSuccess(data, status){
+		data = $.trim(data);
+    hideLoader()//隐藏加载器
+    if(data == '1'){ //从服务器取回参数，为1则为登陆成功
+      if($('#remberpwd').is(':checked')){ //如果记住密码选项被选中，向cookie中写入用户名及密码。
+        var username = $("#user")[0].value;
+        var password = $("#pwd")[0].value;
+        setCookie('user',username,180);
+        setCookie('pwd',password,180);
+      }else{//登陆操作时记住密码未被选中，则清楚cookie中的记录
+        setCookie('user','',0);
+        setCookie('pwd','',0);
+      }
+      if($('#autologin').is(':checked')){ //自动登录选中/未选中时对cookie操作
+        setCookie('autologin',true,180);
+      }else{
+        setCookie('autologin',false,0);
+      }
+      window.location.href="mobile.html";
+    }
+    else
+      alert('用户名或密码错误！');
+		//$("#notification").text(data);
+		 }   
+   function onError(data, status){  
+     $("#notification").text("error");
+   }
+      
+   $(document).ready(function() {
+     $("#submit").click(function (){//提交按钮操作
+       showLoader();//显示加载器
+       var formData = $("#callAjaxForm").serialize();
+       $.ajax({
+         type: "POST",
+         url: "postdata.php",
+         //url: "show.php",
+         cache: false,
+         data: formData,
+         success: onSuccess,
+         error: onError
+       });
+       return false;
+     });
+   });
+  </script>
+  <div id="mainpage" data-role="content">
+    <form id="callAjaxForm">
+		<div data-role="fieldcontain">
+			<input type="hidden" name="funcname" value='login'>  
+			<label for="user" >用户名</label>
+			<input type="text" name="user" id="user" placeholder="用户名">
+			<label for="pwd" >密码</label>
+			<input type="password" name="pwd" id="pwd" placeholder="密码">
+      <label> </label>
+      <div id="user" class="ui-grid-a">
+        <div class="ui-block-a">
+          <label for="remberpwd">记住密码</label>
+          <input type="checkbox" name="remberpwd" id="remberpwd" value="1">
+        </div>
+        <div class="ui-block-b">
+          <label for="autologin">自动登录</label>
+          <input type="checkbox" name="autologin" id="autologin" value="1" onclick="if($('#autologin').is(':checked')) $('#remberpwd').attr('checked',true).checkboxradio('refresh');">
+        </div>
+      
+			<label> </label>
+			<button data-theme="c" id="submit" type="submit">登陆</button>
+		</div>
+    </form>
+
+  </div>
+<div data-role="footer" data-position="fixed" data-fullscreen="true">
+<h1>版权声明</h1>
+</div>
+</body>
+</html>

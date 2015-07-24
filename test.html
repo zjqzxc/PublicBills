@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<link rel="stylesheet" href="jquery/jquery.mobile-1.4.5.min.css">
+<script src="jquery/jquery-1.11.3.min.js"></script>
+<script src="jquery/jquery.mobile-1.4.5.min.js"></script>
+<script>
+function showLoader() {
+  //显示加载器.for jQuery Mobile 1.2.0
+  $.mobile.loading('show', {
+    text: '加载中...', //加载器中显示的文字
+    textVisible: true, //是否显示文字
+    theme: 'b',        //加载器主题样式a-e
+    textonly: false,   //是否只显示文字
+    html: ""           //要显示的html内容，如图片等
+  });
+}
+function hideLoader(){
+  //隐藏加载器
+  $.mobile.loading('hide');
+} 
+
+function addzero (value, length) {//时间日期前补‘0’
+  if (!length) length = 2;          
+  value = String(value);        
+  for (var i = 0, zeros = ''; i < (length - value.length); i++) {
+    zeros += '0';
+    }
+  return zeros + value;         
+};
+//日期减一天
+function dayminus(){
+  var date=$("#date")[0].value;
+  var arr=date.split("-");
+  date=arr[0]+"-"+arr[1]+"-"+addzero(Number(arr[2])-1);
+  $("#date").val(date);
+  $("#btn_dayminus").val("还在昨天").button("refresh"); 
+}
+//时间减去一小时
+function hoursminus(){
+  var time=$("#time")[0].value;
+  var arr=time.split(":");
+  time=addzero(Number(arr[0])-1)+":"+arr[1];
+  $("#time").val(time);
+  $("#btn_hoursminus").val("再早点儿").button("refresh");
+}
+//addone
+function addone(){
+  $.get("ajaxfunc.php",{ func: "addoneperson" },function(result){
+    $("#person").append(result).trigger('create');
+  });
+}
+
+function loadnewpage(name){
+  $.get("ajaxfunc.php",{ func: name },function(result){
+    $("#mainpage").html(result).trigger('create');
+  });
+  
+}
+
+window.onload = function() {
+  //get users
+  $.get("ajaxfunc.php",{ func: "gethtmluserlist" },function(result){
+    $("#user").html(result).trigger('create');
+  });
+  //默认付款人
+  addone();
+  //设置当前日期时间为默认值
+  var curr_time = new Date();
+  $("#date").val(curr_time.getFullYear()+"-"+addzero(curr_time.getMonth())+"-"+addzero(curr_time.getDate()));
+  $("#time").val(addzero(curr_time.getHours())+":"+addzero(curr_time.getMinutes()));
+}; 
+
+</script>
+</head>
+<body>
+
+<div data-role="page" id="pageone">
+  <div data-role="header" data-position="fixed" data-fullscreen="false">
+    <h1>欢迎来到我的主页</h1>
+    <div data-role="navbar">
+      <ul>
+        <li><a href="#" data-icon="home">首页</a></li>
+        <li><a href="#mypanel" data-icon="bars">导航</a></li>
+        <li><a href="#" data-icon="search">搜索</a></li>
+      </ul>
+    </div>
+  </div>
+  
+<!--左侧导航栏-->
+<div data-role="panel" id="mypanel" data-display="overlay" data-position="left">
+  <!-- panel content goes here -->
+  <div class="ui-alt-icon ui-nodisc-icon ui-listview">
+    <ul class="ui-listview" data-inset="true">
+      <li class="ui-first-child"><a href="#" onclick="location.reload()" class="ui-btn ui-btn-icon-right ui-icon-carat-r">添加新账单</a></li>
+      <li><a href="#" onclick="loadnewpage('appendrecord')" data-ajax="false" class="ui-btn ui-btn-icon-right ui-icon-carat-r">追加付款记录</a></li>
+      <li><a href="#" class="ui-btn ui-btn-icon-right ui-icon-carat-r">查看历史记录</a></li>
+      <li><a href="#" class="ui-btn ui-btn-icon-right ui-icon-carat-r">发起一次结算</a></li>
+    </ul>
+  </div>
+  <a href="#demo-links" data-rel="close" data-role="button" data-theme="c" data-icon="delete" data-inline="true"> Close panel</a>
+</div>
+
+<!-- 页面主体 -->
+  <script>
+  function onSuccess(data, status){  
+    data = $.trim(data);
+    $("#notification").text(data);
+    hideLoader()//隐藏加载器
+   }   
+   function onError(data, status){  
+     $("#notification").text("error");
+   } 
+   $(document).ready(function() {
+     $("#submit").click(function(){//提交按钮操作
+       showLoader();//显示加载器
+       var formData = $("#callAjaxForm").serialize();
+       $.ajax({
+         type: "POST",
+         url: "show.php",
+         cache: false,
+         data: formData,
+         success: onSuccess,
+         error: onError
+       });
+       return false;
+     });
+   });
+  </script>
+  <div id="mainpage" data-role="content">
+    <form id="callAjaxForm"> 
+      <select name="title" id="title" data-native-menu="false">
+        <option value="mon">事件1</option>
+        <option value="tu1e">事件2</option>
+        <option value="wed">事件3</option>
+      </select>
+      
+      <label for="money" class="ui-hidden-accessible">Money</label>
+      <input type="text" name="money" id="money" placeholder="一共多少钱呀">      
+      <label for="date">
+        <input id="btn_dayminus" type="button" data-inline="true" value="昨天的事" data-mini="true" onclick="dayminus()">
+        <input id="btn_hoursminus" type="button" data-inline="true" value="一小时前" data-mini="true" onclick="hoursminus()">
+      </label>
+      <div class="ui-grid-a">
+        <div class="ui-block-a">
+            <input type="date" name="date" id="date">
+        </div>
+        <div class="ui-block-b">
+            <input type="time" name="time" id="time">
+        </div>
+      </div>
+      <input type="submit" id="submit" data-inline="false" value="提交">
+
+    </form>
+  </div>
+
+
+<h3 id="notification">数据回显：</h3>
+  <div data-role="footer" data-position="fixed" data-fullscreen="true">
+  <h1>页脚文本</h1>
+  </div>
+</div> 
+
+</body>
+</html>

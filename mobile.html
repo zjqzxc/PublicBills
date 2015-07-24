@@ -6,39 +6,41 @@
 <link rel="stylesheet" href="jquery/jquery.mobile-1.4.5.min.css">
 <script src="jquery/jquery-1.11.3.min.js"></script>
 <script src="jquery/jquery.mobile-1.4.5.min.js"></script>
+<script src="main.js"></script>
 <script>
-function addzero (value, length) {//时间日期前补‘0’
-  if (!length) length = 2;          
-  value = String(value);        
-  for (var i = 0, zeros = ''; i < (length - value.length); i++) {
-    zeros += '0';
-    }
-  return zeros + value;         
-};
-//日期减一天
-function dayminus(){
-  var date=$("#date")[0].value;
-  var arr=date.split("-");
-  date=arr[0]+"-"+arr[1]+"-"+addzero(Number(arr[2])-1);
-  $("#date").val(date);
-  $("#btn_dayminus").val("还在昨天").button("refresh"); 
+function logout() {
+    var popupDialogId = 'popupDialog';
+    $('<div data-role="popup" id="' + popupDialogId + '" data-confirmed="no" data-transition="pop" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="min-width:216px;max-width:500px;"> \
+                    \
+                    <div role="main" class="ui-content">\
+                        <h3 class="ui-title" style="color:#fff; text-align:center;margin-bottom:15px">确定要退出登陆吗？</h3>\
+                        <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b optionConfirm" data-rel="back" style="background: #1784fd;width: 33%;border-radius: 5px;height: 30px;line-height: 30px;padding: 0;font-size: .9em;margin: 0 0 0 12%;font-weight: 100;">确定</a>\
+                        <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b optionCancel" data-rel="back" data-transition="flow" style="background: #DBDBDB;width: 33%;border-radius: 5px;height: 30px;line-height: 30px;padding: 0;font-size: .9em;margin: 0 0 0 5%;font-weight: 100;color: #333;text-shadow: none;">取消</a>\
+                    </div>\
+                </div>')
+    .appendTo($.mobile.pageContainer);
+    var popupDialogObj = $('#' + popupDialogId);
+    popupDialogObj.trigger('create');
+    popupDialogObj.popup({
+        afterclose: function (event, ui) {
+            popupDialogObj.find(".optionConfirm").first().off('click');
+            var isConfirmed = popupDialogObj.attr('data-confirmed') === 'yes' ? true : false;
+            $(event.target).remove();
+            if (isConfirmed) {
+               //这里执行确认需要执行的代码
+               setCookie('autologin',false,0); //清除自动登陆选项
+               //此处应有代码使服务器删除session，懒得再写一个ajax了，暂时先回到首页
+               window.location.href="index.html"; //返回首页
+            }
+        }
+    });
+    popupDialogObj.popup('open');
+    popupDialogObj.find(".optionConfirm").first().on('click', function () {
+        popupDialogObj.attr('data-confirmed', 'yes');
+    });
 }
-//时间减去一小时
-function hoursminus(){
-  var time=$("#time")[0].value;
-  var arr=time.split(":");
-  time=addzero(Number(arr[0])-1)+":"+arr[1];
-  $("#time").val(time);
-  $("#btn_hoursminus").val("再早点儿").button("refresh");
-}
-//addone
-function addone(){
-  $.get("ajaxfunc.php",{ func: "addoneperson" },function(result){
-    $("#person").append(result).trigger('create');
-  });
-}
-
-window.onload = function() {
+  
+ window.onload = function() {
   //get users
   $.get("ajaxfunc.php",{ func: "gethtmluserlist" },function(result){
     $("#user").html(result).trigger('create');
@@ -66,43 +68,67 @@ window.onload = function() {
       </ul>
     </div>
   </div>
-
+  
+<!--左侧导航栏-->
 <div data-role="panel" id="mypanel" data-display="overlay" data-position="left">
   <!-- panel content goes here -->
   <div class="ui-alt-icon ui-nodisc-icon ui-listview">
     <ul class="ui-listview" data-inset="true">
-      <li class="ui-first-child"><a href="#" class="ui-btn ui-btn-icon-right ui-icon-carat-r">123</a></li>
-      <li><a href="#" class="ui-btn ui-btn-icon-right ui-icon-carat-r">123</a></li>
+      <li class="ui-first-child"><a href="#" onclick="location.reload()" class="ui-btn ui-btn-icon-right ui-icon-carat-r">添加新账单</a></li>
+      <li><a href="#" onclick="loadnewpage('appendrecord')" data-ajax="false" class="ui-btn ui-btn-icon-right ui-icon-carat-r">追加付款记录</a></li>
+      <li><a href="#" onclick="loadnewpage('history')" data-ajax="false" class="ui-btn ui-btn-icon-right ui-icon-carat-r">查看历史记录</a></li>
+      <li><a href="#" onclick="loadnewpage('settlement')" data-ajax="false"class="ui-btn ui-btn-icon-right ui-icon-carat-r">结算状态</a></li>
+      <li><a href="#" onclick="logout()" data-ajax="false"class="ui-btn ui-btn-icon-right ui-icon-carat-r">退出登陆</a></li>
     </ul>
   </div>
   <a href="#demo-links" data-rel="close" data-role="button" data-theme="c" data-icon="delete" data-inline="true"> Close panel</a>
 </div>
 
-  <script>  
-        function onSuccess(data, status){  
-            data = $.trim(data);  
-            $("#notification").text(data);
-        }   
-        function onError(data, status){  
-            $("#notification").text("error");
-        } 
-        $(document).ready(function() {  
-            $("#submit").click(function(){
-                var formData = $("#callAjaxForm").serialize();
-                $.ajax({
-                    type: "POST",
-                    url: "show.php",
-                    cache: false,
-                    data: formData,
-                    success: onSuccess,
-                    error: onError
-                });
-                return false;
-            });
-        });
-  </script> 
-  <div data-role="content">
-    <form id="callAjaxForm"> 
+<!-- 页面主体 -->
+  <script>
+  function onSuccess(data, status){  
+    data = $.trim(data);
+    $("#notification").text(data);
+    hideLoader()//隐藏加载器
+   }   
+   function onError(data, status){  
+     $("#notification").text("error");
+   } 
+   
+   //备用提交函数
+   function submit0(){//提交按钮操作
+       showLoader();//显示加载器
+       var formData = $("#callAjaxForm").serialize();
+       $.ajax({
+         type: "POST",
+         url: "postdata.php",
+         cache: false,
+         data: formData,
+         success: onSuccess,
+         error: onError
+       });
+       return false;
+     }
+   
+   $(document).ready(function() {
+     $("#submit").click(function(){//提交按钮操作
+       showLoader();//显示加载器
+       var formData = $("#callAjaxForm").serialize();
+       $.ajax({
+         type: "POST",
+         url: "postdata.php",
+         cache: false,
+         data: formData,
+         success: onSuccess,
+         error: onError
+       });
+       return false;
+     });
+   });
+  </script>
+  <div id="mainpage" data-role="content">
+    <form id="callAjaxForm">
+      <input type="hidden" name="funcname" value=1>  
       <label for="title" class="ui-hidden-accessible">Titile</label>
       <input type="text" name="title" id="title" placeholder="都买啥了">
       <label for="money" class="ui-hidden-accessible">Money</label>
@@ -144,7 +170,7 @@ window.onload = function() {
       
       <input type="button" id="btn_addone" onclick="addone()" data-inline="true" value="还有人共同付款">
       
-      <input type="submit" id="submit" data-inline="false" value="提交">
+      <input type="submit" id="submit" data-inline="false" data-ajax="false" value="提交">
 
     </form>
   </div>
@@ -152,7 +178,7 @@ window.onload = function() {
 
 <h3 id="notification">数据回显：</h3>
   <div data-role="footer" data-position="fixed" data-fullscreen="true">
-  <h1>页脚文本</h1>
+  <h1>版权声明</h1>
   </div>
 </div> 
 

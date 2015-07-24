@@ -1,4 +1,5 @@
 <?php
+session_start();
 header("Content-type: text/html; charset=utf-8"); 
 if (!file_exists('sql.db')){
 	if(!file_exists('sql.sample')){
@@ -14,19 +15,18 @@ if (!file_exists('sql.db')){
 
 try{
 	$con = new PDO('sqlite:sql.db');
-	echo 'Connected!<br />';
+	$con ->query("set names utf8");
+	#echo 'Connected!<br />';
 }catch (PDOException $e) {
     print "Error!: " . $e->getMessage() . "<br/>";
     die();
 }
-@mysql_query("set names utf8");
-
 	
 //$count = $con -> exec ("INSERT INTO test (text) values('中文')");
 //echo $count;
 //echo $a;
 /*
-$c = $con -> query("SELECT * FROM test");
+$c = $con -> query("SELECT * FROM user");
 $arr = $c -> fetchAll();
 print_r($arr);
 */
