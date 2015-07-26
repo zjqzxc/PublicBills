@@ -50,6 +50,26 @@ function loadnewpage(name){
   }); 
 }
 
+function settlement(){
+$.get("postdata.php",{ funcname: "settlement" },function(result){
+   if (result==1) loadnewpage('settlement');
+   else newalert('发起失败，请稍后再试')
+  });
+}
+
+function dosettlement(){
+$.get("postdata.php",{ funcname: "dosettlement" },function(result){
+   newalert(result);
+   if (result==1 ) loadnewpage('settlement');
+   else if(result==2 ){
+     alert('结算全部完成！');
+     loadnewpage('settlement');
+   }else{
+     newalert('好像是出错。。。');
+   }
+  });
+}
+
 function setCookie(c_name,value,expiredays)
 {
 var exdate=new Date()
@@ -71,4 +91,57 @@ if (document.cookie.length>0)
     } 
   }
 return ""
+}
+
+function newalert(title){
+  var popupDialogId =  Date.parse(new Date());
+    $('<div data-role="popup" id="' + popupDialogId + '" data-confirmed="no" data-transition="pop" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="min-width:216px;max-width:500px;"> \
+                    \
+                    <div role="main" class="ui-content">\
+                        <h3 class="ui-title" style="color:#fff; text-align:center;margin-bottom:15px">'+title+'</h3>\
+                        <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b optionConfirm" data-rel="back" style="background: #1784fd;width: 75%;border-radius: 5px;height: 30px;line-height: 30px;padding: 0;font-size: .9em;margin: 0 0 0 12%;font-weight: 100;">确定</a>\
+                    </div>\
+                </div>')
+    .appendTo($.mobile.pageContainer);
+    var popupDialogObj = $('#' + popupDialogId);
+    popupDialogObj.trigger('create');
+    popupDialogObj.popup({
+        afterclose: function (event, ui) {
+            popupDialogObj.find(".optionConfirm").first().off('click');
+        }
+    });
+    popupDialogObj.popup('open');
+    popupDialogObj.find(".optionConfirm").first().on('click', function () {
+        popupDialogObj.attr('data-confirmed', 'yes');
+    });
+}
+
+function newconfirm(title,func) {
+    var popupDialogId = 'popupDialog';
+    $('<div data-role="popup" id="' + popupDialogId + '" data-confirmed="no" data-transition="pop" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="min-width:216px;max-width:500px;"> \
+                    \
+                    <div role="main" class="ui-content">\
+                        <h3 class="ui-title" style="color:#fff; text-align:center;margin-bottom:15px">'+title+'</h3>\
+                        <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b optionConfirm" data-rel="back" style="background: #1784fd;width: 33%;border-radius: 5px;height: 30px;line-height: 30px;padding: 0;font-size: .9em;margin: 0 0 0 12%;font-weight: 100;">确定</a>\
+                        <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b optionCancel" data-rel="back" data-transition="flow" style="background: #DBDBDB;width: 33%;border-radius: 5px;height: 30px;line-height: 30px;padding: 0;font-size: .9em;margin: 0 0 0 5%;font-weight: 100;color: #333;text-shadow: none;">取消</a>\
+                    </div>\
+                </div>')
+    .appendTo($.mobile.pageContainer);
+    var popupDialogObj = $('#' + popupDialogId);
+    popupDialogObj.trigger('create');
+    popupDialogObj.popup({
+        afterclose: function (event, ui) {
+            popupDialogObj.find(".optionConfirm").first().off('click');
+            var isConfirmed = popupDialogObj.attr('data-confirmed') === 'yes' ? true : false;
+            $(event.target).remove();
+            if (isConfirmed) {
+               //这里执行确认需要执行的函数
+              func();
+            }
+        }
+    });
+    popupDialogObj.popup('open');
+    popupDialogObj.find(".optionConfirm").first().on('click', function () {
+        popupDialogObj.attr('data-confirmed', 'yes');
+    });
 }

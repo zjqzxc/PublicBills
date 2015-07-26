@@ -30,7 +30,11 @@ function logout() {
                //这里执行确认需要执行的代码
                setCookie('autologin',false,0); //清除自动登陆选项
                //此处应有代码使服务器删除session，懒得再写一个ajax了，暂时先回到首页
-               window.location.href="index.html"; //返回首页
+               $.get("postdata.php",{ funcname: "logout" },function(result){
+                 if(result==1) window.location.href="index.html"; //返回首页
+                 else alert('严重错误，注销未成功！');
+               });
+               
             }
         }
     });
@@ -51,6 +55,32 @@ function logout() {
   var curr_time = new Date();
   $("#date").val(curr_time.getFullYear()+"-"+addzero(curr_time.getMonth())+"-"+addzero(curr_time.getDate()));
   $("#time").val(addzero(curr_time.getHours())+":"+addzero(curr_time.getMinutes()));
+  
+  $.get("postdata.php",{ funcname: "checksettlement" },function(result){
+    //alert(result);
+    if(result=='no_login') {
+      alert('非法访问');
+      window.location.href="index.html";
+    }
+    if(result!=0) newalert('有人发起了一次结算');
+  });
+  $.get("postdata.php",{ funcname: "whoami" },function(result){
+    
+    now = new Date();
+    hour = now.getHours();
+    {$("#whoami").html("凌晨好,")}
+    //alert(hour)
+    if(hour < 6){$("#whoami").html("凌晨好,")}
+    else if (hour < 9){$("#whoami").html("早上好,")}
+    else if (hour < 12){$("#whoami").html("上午好,")}
+    else if (hour < 14){$("#whoami").html("中午好,")}
+    else if (hour < 17){$("#whoami").html("下午好,")}
+    else if (hour < 19){$("#whoami").html("傍晚好,")}
+    else if (hour < 22){$("#whoami").html("晚上好,")}
+    else {$("#whoami").html("深夜好,")}
+    
+    $("#whoami").append(result).trigger('create');
+  });
 }; 
 
 </script>
@@ -62,9 +92,9 @@ function logout() {
     <h1>欢迎来到我的主页</h1>
     <div data-role="navbar">
       <ul>
-        <li><a href="#" data-icon="home">首页</a></li>
+        <li><a href="#" onclick="javascript:window.location.href=document.referrer;" data-icon="home">首页</a></li>
         <li><a href="#mypanel" data-icon="bars">导航</a></li>
-        <li><a href="#" data-icon="search">搜索</a></li>
+        <li><a href="#" onclick="newconfirm('别点了，功能还没写呢<br />下面的确定取消点谁都一样，都是‘什么也不做’')" data-icon="search">搜索</a></li>
       </ul>
     </div>
   </div>
@@ -74,7 +104,8 @@ function logout() {
   <!-- panel content goes here -->
   <div class="ui-alt-icon ui-nodisc-icon ui-listview">
     <ul class="ui-listview" data-inset="true">
-      <li class="ui-first-child"><a href="#" onclick="location.reload()" class="ui-btn ui-btn-icon-right ui-icon-carat-r">添加新账单</a></li>
+      <li class="ui-first-child"><a id="whoami" href="#" onclick="" class="ui-btn">欢迎您</a></li>
+      <li><a href="#" onclick="location.reload()" class="ui-btn ui-btn-icon-right ui-icon-carat-r">添加新账单</a></li>
       <li><a href="#" onclick="loadnewpage('appendrecord')" data-ajax="false" class="ui-btn ui-btn-icon-right ui-icon-carat-r">追加付款记录</a></li>
       <li><a href="#" onclick="loadnewpage('history')" data-ajax="false" class="ui-btn ui-btn-icon-right ui-icon-carat-r">查看历史记录</a></li>
       <li><a href="#" onclick="loadnewpage('settlement')" data-ajax="false"class="ui-btn ui-btn-icon-right ui-icon-carat-r">结算状态</a></li>
@@ -88,11 +119,38 @@ function logout() {
   <script>
   function onSuccess(data, status){  
     data = $.trim(data);
-    $("#notification").text(data);
     hideLoader()//隐藏加载器
+    //$("#notification").text(data);
+    //错误信息处理
+    switch(data)
+    {
+    case 'title_null':
+      newalert('第一行好像有点空');
+      break;
+    case 'money_null':
+      newalert('总得告诉我多少钱吧');
+      break;
+    case 'money_nan':
+      newalert('这个。。我懒得在文本框做限制了，还真的在金额文本框里不输入数字啊');
+      break;
+    case 'paidinfo_payer_repeat':
+      newalert('付款信息里，好像付款人有点重复');
+      break;
+    case 'paidinfo_toomuch_ROA':
+      newalert('RestOfAll的意思是剩下所有的都是这个人支付的。但是出现两次我就不知道是啥意思了。');
+      break;
+    case 'sql_error':
+      newalert('数据库出了点问题，再试一次还不行的话直接截图联系作者吧');
+      break;
+    case '1':
+      newalert('提交成功');
+      break;
+    }
    }   
    function onError(data, status){  
-     $("#notification").text("error");
+     //$("#notification").text("error");
+     newconfirm('服务器那边好像是出错了<br />要不，再等会儿试试？')
+     hideLoader()//隐藏加载器
    } 
    
    //备用提交函数
@@ -101,6 +159,7 @@ function logout() {
        var formData = $("#callAjaxForm").serialize();
        $.ajax({
          type: "POST",
+         timeout:5000,
          url: "postdata.php",
          cache: false,
          data: formData,
@@ -175,10 +234,10 @@ function logout() {
     </form>
   </div>
 
-
 <h3 id="notification">数据回显：</h3>
+
   <div data-role="footer" data-position="fixed" data-fullscreen="true">
-  <h1>版权声明</h1>
+  <h1>©Flagplus</h1>
   </div>
 </div> 
 

@@ -1,7 +1,6 @@
-<?php
+<?php 
 include 'conn.php';
 
-
-$rs = $con -> query("SELECT * FROM user");
-$arr = $rs -> fetchAll();
-print_r($arr);
+$sql = $con -> exec ("UPDATE bills SET tag=0 WHERE tag=1 AND family=1 AND del=0");
+print_r($sql);
+?>
