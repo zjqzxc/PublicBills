@@ -1,8 +1,10 @@
 <?php
 require_once 'conn.php';
-$func=$_REQUEST['func'];
 $family=isset($_SESSION['family'])?$_SESSION['family']:null;
 $user=isset($_SESSION['user'])?$_SESSION['user']:null;
+
+if($user!='') $func=$_REQUEST['func'];
+else die('登陆不合法');
 
 switch ($func)
 {
@@ -104,19 +106,127 @@ case 'appendrecord':
     </form>
   '  ;
   break;
+  
 case 'history':
-	echo '正在进行<br />';
+//家庭成员列表
+	$userlist = Array();
+	$sql = $con -> query("SELECT user,name FROM user WHERE family='$family'");
+	while ($rs = $sql -> fetch()){
+		$userlist[$rs['user']]=$rs['name'];
+	}
+	
+	//正在进行
+	$txt= '<button onclick="javascript:$(\'.except-me\').toggle();">OnlyMe</button>
+    <h2>正在进行</h2>';
 	$sql = $con -> query("SELECT * FROM bills WHERE tag=2 AND family='$family' AND del=0");
 	while($rs = $sql -> fetch()){
-		print_r($rs);
+		//print_r($rs);
+		//计算剩余金额
+		$paid='';
+		$paidinfo='';
+		$bill=$rs['id'];
+		$sql2 = $con -> query("SELECT user,money FROM settlement WHERE bill='$bill' AND family='$family'");
+		while ($rs2= $sql2 -> fetch()){
+			$paid+=$rs2['money'];
+			$paidinfo.=$userlist[$rs2['user']].' 支付了 '.$rs2['money'].' 元<br />'
+			;
+		}
+		$rest=$rs['money']-$paid;
+		//参与人列表
+		$participantlist=json_decode($rs['participant']);
+		$participantname='';
+		foreach ($participantlist as $value){
+			$participantname.=$userlist[$value].' ';
+		}
+		if (in_array($user, $participantlist)) $txt.='<div data-role="collapsible">
+		';
+		else $txt.='<div class="except-me" data-role="collapsible">
+		';
+		$txt.='<h3>'.$rs['title'].'<h3>
+		';
+		$txt.='<div>
+        <b>总金额：</b>'.$rs['money'].'<br />
+        <b>参与人：</b>'.$participantname.'<br />
+        <b>时间：</b>'.date("Y-m-d H:i", $rs['date']).'<br />
+        <b>剩余金额：</b>'.$rest.'<br />
+        <b>支付详情：</b><br />'.$paidinfo.'
+      </div>
+      </div>
+      ';
 	}
-	echo '<br />还未结算<br />';
+	//echo '<br />还未结算<br />';
+	$txt.='<h2>还未结算</h2>';
 	$sql1 = $con -> query ("SELECT * FROM bills WHERE tag=1 AND family='$family' AND del=0");
-	while($rs1 = $sql1 -> fetch()){
-		print_r($rs1);
+	while($rs = $sql1 -> fetch()){
+		$paidinfo='';
+		$bill=$rs['id'];
+		$sql2 = $con -> query("SELECT user,money FROM settlement WHERE bill='$bill' AND family='$family'");
+		while ($rs2= $sql2 -> fetch()){
+			$paidinfo.=$userlist[$rs2['user']].' 支付了 '.$rs2['money'].' 元<br />'
+			;
+		}
+		//参与人列表
+		$participantlist=json_decode($rs['participant']);
+		$participantname='';
+		foreach ($participantlist as $value){
+			$participantname.=$userlist[$value].' ';
+		}
+		if (in_array($user, $participantlist)) $txt.='<div data-role="collapsible">
+		';
+		else $txt.='<div class="except-me" data-role="collapsible">
+		';
+		$txt.='<h3>'.$rs['title'].'<h3>
+		';
+		$txt.='<div>
+        <b>总金额：</b>'.$rs['money'].'<br />
+        <b>参与人：</b>'.$participantname.'<br />
+        <b>时间：</b>'.date("Y-m-d H:i", $rs['date']).'<br />
+        <b>支付详情：</b><br />'.$paidinfo.'
+      </div>
+      </div>
+      ';
 	}
-	$txt= 'history';
+	
+	//历史记录
+	$txt.='<h2>历史记录</h2>
+	<div data-filter="true">';
+	$sql1 = $con -> query ("SELECT * FROM bills WHERE tag=0 AND family='$family' AND del=0");
+	while($rs = $sql1 -> fetch()){
+		$paidinfo='';
+		$bill=$rs['id'];
+		$sql2 = $con -> query("SELECT user,money FROM settlement WHERE bill='$bill' AND family='$family'");
+		while ($rs2= $sql2 -> fetch()){
+			$paidinfo.=$userlist[$rs2['user']].' 支付了 '.$rs2['money'].' 元<br />'
+			;
+		}
+		//参与人列表
+		$participantlist=json_decode($rs['participant']);
+		$participantname='';
+		foreach ($participantlist as $value){
+			$participantname.=$userlist[$value].' ';
+		}
+		if (in_array($user, $participantlist)) $txt.='<div data-role="collapsible">
+		';
+		else $txt.='<div class="except-me" data-role="collapsible">
+		';
+		$txt.='<h3>'.$rs['title'].'<h3>
+		';
+		$txt.='<div>
+        <b>总金额：</b>'.$rs['money'].'<br />
+        <b>参与人：</b>'.$participantname.'<br />
+        <b>时间：</b>'.date("Y-m-d H:i", $rs['date']).'<br />
+        <b>支付详情：</b><br />'.$paidinfo.'
+      </div>
+      </div>
+      ';
+	}
+	$txt.='</div>
+	<h2> </h2>
+    <input href="#" type="button" id="more" value="更多..." disabled="reue"></input>
+    <h2> </h2>';
+    
 	break;
+	
 case 'settlement':
 	$deviation=0;//偏差值，记录钱数四舍五入后与实际值的差
 	//查询config的settlementchange字段，若为0则实付应付无改变，若为1则更新
