@@ -116,7 +116,7 @@ case 'history':
 	}
 	
 	//正在进行
-	$txt= '<button onclick="javascript:$(\'.except-me\').toggle();">OnlyMe</button>
+	$txt= '<button onclick="javascript:$(\'.except-me\').toggle();">和我有关</button>
     <h2>正在进行</h2>';
 	$sql = $con -> query("SELECT * FROM bills WHERE tag=2 AND family='$family' AND del=0");
 	while($rs = $sql -> fetch()){
@@ -354,6 +354,9 @@ case 'settlement':
 		if ($rs2['status']==2) $txt.=$txt4;
 		else $txt.=$txt3;
 	else $txt.=$txt2;
+	break;
+case 'help':
+	$txt='使用帮助';
 	break;
 default:
 	$txt='Unknown Function！';

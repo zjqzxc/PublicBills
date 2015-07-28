@@ -8,158 +8,11 @@
 <script src="jquery/jquery.mobile-1.4.5.min.js"></script>
 <script src="main.js"></script>
 <script>
-function logout() {
-    var popupDialogId = 'popupDialog';
-    $('<div data-role="popup" id="' + popupDialogId + '" data-confirmed="no" data-transition="pop" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="min-width:216px;max-width:500px;"> \
-                    \
-                    <div role="main" class="ui-content">\
-                        <h3 class="ui-title" style="color:#fff; text-align:center;margin-bottom:15px">确定要退出登陆吗？</h3>\
-                        <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b optionConfirm" data-rel="back" style="background: #1784fd;width: 33%;border-radius: 5px;height: 30px;line-height: 30px;padding: 0;font-size: .9em;margin: 0 0 0 12%;font-weight: 100;">确定</a>\
-                        <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b optionCancel" data-rel="back" data-transition="flow" style="background: #DBDBDB;width: 33%;border-radius: 5px;height: 30px;line-height: 30px;padding: 0;font-size: .9em;margin: 0 0 0 5%;font-weight: 100;color: #333;text-shadow: none;">取消</a>\
-                    </div>\
-                </div>')
-    .appendTo($.mobile.pageContainer);
-    var popupDialogObj = $('#' + popupDialogId);
-    popupDialogObj.trigger('create');
-    popupDialogObj.popup({
-        afterclose: function (event, ui) {
-            popupDialogObj.find(".optionConfirm").first().off('click');
-            var isConfirmed = popupDialogObj.attr('data-confirmed') === 'yes' ? true : false;
-            $(event.target).remove();
-            if (isConfirmed) {
-               //这里执行确认需要执行的代码
-               setCookie('autologin',false,0); //清除自动登陆选项
-               //此处应有代码使服务器删除session，懒得再写一个ajax了，暂时先回到首页
-               $.get("postdata.php",{ funcname: "logout" },function(result){
-                 if(result==1) window.location.href="index.html"; //返回首页
-                 else alert('严重错误，注销未成功！');
-               });
-               
-            }
-        }
-    });
-    popupDialogObj.popup('open');
-    popupDialogObj.find(".optionConfirm").first().on('click', function () {
-        popupDialogObj.attr('data-confirmed', 'yes');
-    });
-}
-  
- window.onload = function() {
-  //get users
-  $.get("ajaxfunc.php",{ func: "gethtmluserlist" },function(result){
-    $("#user").html(result).trigger('create');
-  });
-  //默认付款人
-  addone();
-  //设置当前日期时间为默认值
-  var curr_time = new Date();
-  $("#date").val(curr_time.getFullYear()+"-"+addzero(curr_time.getMonth())+"-"+addzero(curr_time.getDate()));
-  $("#time").val(addzero(curr_time.getHours())+":"+addzero(curr_time.getMinutes()));
-  
-  $.get("postdata.php",{ funcname: "checksettlement" },function(result){
-    //alert(result);
-    if(result=='no_login') {
-      alert('非法访问');
-      window.location.href="index.html";
-    }
-    if(result!=0) newalert('有人发起了一次结算');
-  });
-  $.get("postdata.php",{ funcname: "whoami" },function(result){
-    
-    now = new Date();
-    hour = now.getHours();
-    {$("#whoami").html("凌晨好,")}
-    //alert(hour)
-    if(hour < 6){$("#whoami").html("凌晨好,")}
-    else if (hour < 9){$("#whoami").html("早上好,")}
-    else if (hour < 12){$("#whoami").html("上午好,")}
-    else if (hour < 14){$("#whoami").html("中午好,")}
-    else if (hour < 17){$("#whoami").html("下午好,")}
-    else if (hour < 19){$("#whoami").html("傍晚好,")}
-    else if (hour < 22){$("#whoami").html("晚上好,")}
-    else {$("#whoami").html("深夜好,")}
-    
-    $("#whoami").append(result).trigger('create');
-  });
-}; 
-
-</script>
-</head>
-<body>
-
-<div data-role="page" id="pageone">
-  <div data-role="header" data-position="fixed" data-fullscreen="false">
-    <h1>欢迎来到我的主页</h1>
-    <div data-role="navbar">
-      <ul>
-        <li><a href="#" onclick="javascript:window.location.href=document.referrer;" data-icon="home">首页</a></li>
-        <li><a href="#mypanel" data-icon="bars">导航</a></li>
-        <li><a href="#" onclick="newconfirm('别点了，功能还没写呢<br />下面的确定取消点谁都一样，都是‘什么也不做’')" data-icon="search">搜索</a></li>
-      </ul>
-    </div>
-  </div>
-  
-<!--左侧导航栏-->
-<div data-role="panel" id="mypanel" data-display="overlay" data-position="left">
-  <!-- panel content goes here -->
-  <div class="ui-alt-icon ui-nodisc-icon ui-listview">
-    <ul class="ui-listview" data-inset="true">
-      <li class="ui-first-child"><a id="whoami" href="#" onclick="" class="ui-btn">欢迎您</a></li>
-      <li><a href="#" onclick="location.reload()" class="ui-btn ui-btn-icon-right ui-icon-carat-r">添加新账单</a></li>
-      <li><a href="#" onclick="loadnewpage('appendrecord')" data-ajax="false" class="ui-btn ui-btn-icon-right ui-icon-carat-r">追加付款记录</a></li>
-      <li><a href="#" onclick="loadnewpage('history')" data-ajax="false" class="ui-btn ui-btn-icon-right ui-icon-carat-r">查看历史记录</a></li>
-      <li><a href="#" onclick="loadnewpage('settlement')" data-ajax="false"class="ui-btn ui-btn-icon-right ui-icon-carat-r">结算状态</a></li>
-      <li><a href="#" onclick="logout()" data-ajax="false"class="ui-btn ui-btn-icon-right ui-icon-carat-r">退出登陆</a></li>
-    </ul>
-  </div>
-  <a href="#demo-links" data-rel="close" data-role="button" data-theme="c" data-icon="delete" data-inline="true"> Close panel</a>
-</div>
-
-<!-- 页面主体 -->
-  <script>
-  function onSuccess(data, status){  
-    data = $.trim(data);
-    hideLoader()//隐藏加载器
-    //$("#notification").text(data);
-    //错误信息处理
-    switch(data)
-    {
-    case 'title_null':
-      newalert('第一行好像有点空');
-      break;
-    case 'money_null':
-      newalert('总得告诉我多少钱吧');
-      break;
-    case 'money_nan':
-      newalert('这个。。我懒得在文本框做限制了，还真的在金额文本框里不输入数字啊');
-      break;
-    case 'paidinfo_payer_repeat':
-      newalert('付款信息里，好像付款人有点重复');
-      break;
-    case 'paidinfo_toomuch_ROA':
-      newalert('RestOfAll的意思是剩下所有的都是这个人支付的。但是出现两次我就不知道是啥意思了。');
-      break;
-    case 'sql_error':
-      newalert('数据库出了点问题，再试一次还不行的话直接截图联系作者吧');
-      break;
-    case '1':
-      newalert('提交成功');
-      break;
-    }
-   }   
-   function onError(data, status){  
-     //$("#notification").text("error");
-     newconfirm('服务器那边好像是出错了<br />要不，再等会儿试试？')
-     hideLoader()//隐藏加载器
-   } 
-   
-   //备用提交函数
-   function submit0(){//提交按钮操作
+  function login (){//提交按钮操作
        showLoader();//显示加载器
        var formData = $("#callAjaxForm").serialize();
        $.ajax({
          type: "POST",
-         timeout:5000,
          url: "postdata.php",
          cache: false,
          data: formData,
@@ -168,14 +21,65 @@ function logout() {
        });
        return false;
      }
-   
+     
+  window.onload = function() {
+    if(getCookie('user')) { // 如果cookie中存在user，则视为记住密码已被已选中。并同时从中读取用户名及密码
+      $("#user").val(getCookie('user'));
+      $("#pwd").val(getCookie('pwd'));
+      $('#remberpwd').attr('checked',true).checkboxradio('refresh');
+    }
+    if(getCookie('autologin')== 'true') { //如果cookie中autologin值为true，则自动执行登陆操作
+      login();
+    }
+  }
+</script>
+</head>
+<body>
+
+<div data-role="page" id="pageone">
+  <div data-role="header" data-position="fixed" data-fullscreen="false">
+			<h1>登陆</h1>
+  </div>
+  <script>
+    function al(){
+      alert(000);
+    }
+	function onSuccess(data, status){
+		data = $.trim(data);
+    hideLoader()//隐藏加载器
+    if(data == '1'){ //从服务器取回参数，为1则为登陆成功
+      if($('#remberpwd').is(':checked')){ //如果记住密码选项被选中，向cookie中写入用户名及密码。
+        var username = $("#user")[0].value;
+        var password = $("#pwd")[0].value;
+        setCookie('user',username,180);
+        setCookie('pwd',password,180);
+      }else{//登陆操作时记住密码未被选中，则清楚cookie中的记录
+        setCookie('user','',0);
+        setCookie('pwd','',0);
+      }
+      if($('#autologin').is(':checked')){ //自动登录选中/未选中时对cookie操作
+        setCookie('autologin',true,180);
+      }else{
+        setCookie('autologin',false,0);
+      }
+      window.location.href="mobile.html";
+    }
+    else
+      alert('用户名或密码错误！');
+		//$("#notification").text(data);
+		 }   
+   function onError(data, status){  
+     $("#notification").text("error");
+   }
+      
    $(document).ready(function() {
-     $("#submit").click(function(){//提交按钮操作
+     $("#submit").click(function (){//提交按钮操作
        showLoader();//显示加载器
        var formData = $("#callAjaxForm").serialize();
        $.ajax({
          type: "POST",
          url: "postdata.php",
+         //url: "show.php",
          cache: false,
          data: formData,
          success: onSuccess,
@@ -185,56 +89,57 @@ function logout() {
      });
    });
   </script>
-  
-  <div id="mainpage" data-role="content">
-    <button onclick="javascript:$('.except-me').toggle();">OnlyMe</button>
-    <h2>正在进行</h2>
-    <div data-role="collapsible">
-      <h3>111</h3>
-      <div>
-        <b>总金额：</b>123<br />
-        <b>参与人：</b>123<br />
-        <b>剩余金额：</b>123<br />
-      </div>
-    </div>
-    <div class="except-me" data-role="collapsible">
-      <h3>333</h3>
-      <div>
-        <b>总金额：</b>123<br />
-        <b>参与人：</b>123<br />
-        <b>剩余金额：</b>123<br />
-      </div>
-    </div>
-    <h2>还未结算</h2>
-    <div data-role="collapsible">
-      <h3>111</h3>
-      <div>
-        <b>总金额：</b>123<br />
-        <b>参与人：</b>123<br />
-        <b>结算状态</b>123<br />
-      </div>
-    </div>
-    <h2>历史记录</h2>
-    <div data-filter="true">
-    <div data-role="collapsible">
-      <h3>111</h3>
-      <div>
-        <b>总金额：</b>123<br />
-        <b>参与人：</b>123<br />
-        <b></b>123<br />
-      </div>
-    </div>
-    </div>
-    <h2> </h2>
-    <a href="#" data-role="button" id="more" >更多...</a>  
+    <div id="mainpage" data-role="content">
+    <form id="callAjaxForm">
+		<div data-role="fieldcontain">
+			<input type="hidden" name="funcname" value='login'>  
+			<label for="user" >用户名</label>
+			<input type="text" name="user" id="user" placeholder="用户名">
+			<label for="pwd" >密码</label>
+			<input type="password" name="pwd" id="pwd" placeholder="密码">
+      <label> </label>
+      <div id="user" class="ui-grid-a">
+        <div class="ui-block-a">
+          <label for="remberpwd">记住密码</label>
+          <input type="checkbox" name="remberpwd" id="remberpwd" value="1">
+        </div>
+        <div class="ui-block-b">
+          <label for="autologin">自动登录</label>
+          <input type="checkbox" name="autologin" id="autologin" value="1" onclick="if($('#autologin').is(':checked')) $('#remberpwd').attr('checked',true).checkboxradio('refresh');">
+        </div>
+      
+			<label> </label>
+			<button data-theme="c" id="submit" type="submit">登陆</button>
+		</div>
+    </form>
+<label> </label>
+    <button data-theme="c" id="reg" type="button" onclick="javascript:location.href='#pagetwo'" data-ajax="false"> 新用户注册</button>
+    <p><a href="#pagetwo" data-ajax="false">Back to index</a></p>
+
+  </div>
+    <a href="#pagetwo">转到页面二</a>
   </div>
 
-<h3 id="notification">数据回显：</h3>
-
-  <div data-role="footer" data-position="fixed" data-fullscreen="true">
-  <h1>©Flagplus</h1>
+  <div data-role="footer">
+  <h1>页脚文本</h1>
   </div>
 </div> 
+
+<div data-role="page" id="pagetwo">
+  <div data-role="header">
+    <h1>欢迎访问我的主页</h1>
+  </div>
+
+  <div data-role="content">
+    <p>Goodbye!</p>
+    <a href="#pageone">转到页面一</a>
+  </div>
+
+  <div data-role="footer">
+  <h1>页脚文本</h1>
+  </div>
+</div> 
+
 
 </body>
 </html>
