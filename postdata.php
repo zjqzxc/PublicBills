@@ -7,7 +7,10 @@ function FetchRepeatMemberInArray($array) {
     $repeat_arr = array_diff_assoc ( $array, $unique_arr ); 
     return $repeat_arr; 
 } 
-
+function checkstr($str){ //防止sql注入
+	$str=htmlentities($str,ENT_QUOTES);
+	return $str;
+}
 
 $arr=$_REQUEST;
 
@@ -99,6 +102,9 @@ function addnewbills($arr,$con){
 		$sql = $con -> exec ("INSERT INTO settlement (user,bill,money,date,family) VALUES ('$user','$billid','$paid','$datetime','$family')");
 		if(!$sql) return 'sql_error';
 	}
+	//更新结算刷新标志为1
+	$sql = $con -> exec ("UPDATE config SET settlementchange=1 WHERE id='$family'");
+	if(!$sql) return 'sql_error';
 	//print_r($datetime); 
 	return 1;
 }
@@ -130,6 +136,8 @@ function appendrecord($arr,$con){
 	}
 	
 	$sql = $con -> exec ("INSERT INTO settlement (user,bill,money,date,family) VALUES ('$user','$billid','$paid','$datetime','$family')");
+	if(!$sql) return 'sql_error';
+	$sql = $con -> exec ("UPDATE config SET settlementchange=1 WHERE id='$family'");
 	if(!$sql) return 'sql_error';
 	return 1;
 }
@@ -178,6 +186,55 @@ function dosettlement($con){
 	else return 'status_reset_error';
 }
 
+function register($arr,$con){
+	/* 返回值说明：
+	 * 1：成功创建一个家庭并成功创建账户
+	 * 2：成功创建账户并加入一个家庭
+	 * 'family_not_exist':家庭不存在
+	 */
+	$user=$arr['user_reg'];
+	$pwd=$arr['passwd'];
+	$name=$arr['name'];
+	date_default_timezone_set('PRC'); 
+	$time=time();
+	if(isset($arr['familyname'])){//新建一个家庭
+		$familyname=checkstr($arr['familyname']);
+		$sql = $con -> exec("INSERT INTO config (familyname,admin,datetime) VALUES ('$familyname','$user','$time')");
+		if(!$sql) return 'sql_error1';
+		$sql2 = $con -> query ("SELECT id FROM config WHERE familyname='$familyname' AND admin='$user'");
+		$rs2 = $sql2 -> fetch();
+		$familyid=$rs2['id'];
+		// add a record to user
+		$sql = $con -> exec("INSERT INTO user (user,passwd,name,family) VALUES ('$user','$pwd','$name','$familyid')");
+		if(!$sql) return 'sql_error2';
+		return 1;
+	}
+	else {
+		$familyid=$arr['familyid'];
+		$admin=$arr['familyuser'];
+		$sql = $con -> query("SELECT id FROM config WHERE id='$familyid' AND admin='$admin'");
+		$rs = $sql -> fetch();
+		if($rs){
+			$familyid=$rs['id'];
+			$sql = $con -> exec("INSERT INTO user (user,passwd,name,family) VALUES ('$user','$pwd','$name','$familyid')");
+			if(!$sql) return 'sql_error2';
+		}else{
+			return 'family_not_exist';
+		}
+		return 2;
+	}
+	
+	
+}
+
+function checkuser($arr,$con){
+	$user = trim($arr['user']);
+	$sql = $con -> query("SELECT id FROM user WHERE user='$user'");
+	$rs = $sql -> fetch();
+	if ($rs) return 0;
+	else return 1;
+}
+
 switch ($arr['funcname'])
 {
 	case 'login':
@@ -203,6 +260,12 @@ switch ($arr['funcname'])
 		break;
 	case "dosettlement":
 		$txt = dosettlement($con);
+		break;
+	case "register":
+		$txt = register($arr,$con);
+		break;
+	case "checkuser":
+		$txt = checkuser($arr,$con);
 		break;
 	default:
 		$txt='Unknown Function';	

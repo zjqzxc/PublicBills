@@ -41,12 +41,11 @@
 			<h1>登陆</h1>
   </div>
   <script>
-    function al(){
-      alert(000);
-    }
+
 	function onSuccess(data, status){
 		data = $.trim(data);
     hideLoader()//隐藏加载器
+
     if(data == '1'){ //从服务器取回参数，为1则为登陆成功
       if($('#remberpwd').is(':checked')){ //如果记住密码选项被选中，向cookie中写入用户名及密码。
         var username = $("#user")[0].value;
@@ -63,13 +62,15 @@
         setCookie('autologin',false,0);
       }
       window.location.href="mobile.html";
-    }
-    else
+    }else 
       alert('用户名或密码错误！');
 		//$("#notification").text(data);
 		 }   
    function onError(data, status){  
-     $("#notification").text("error");
+     //$("#notification").text("error");
+     newconfirm('服务器那边好像是出错了<br />要不，再等会儿试试？')
+     hideLoader()//隐藏加载器
+     
    }
       
    $(document).ready(function() {
@@ -79,7 +80,6 @@
        $.ajax({
          type: "POST",
          url: "postdata.php",
-         //url: "show.php",
          cache: false,
          data: formData,
          success: onSuccess,
@@ -115,27 +115,117 @@
 <label> </label>
     <button data-theme="c" id="reg" type="button" onclick="javascript:location.href='#pagetwo'" data-ajax="false" data-transition="slide"> 新用户注册</button>
 
-
   </div>
 
   </div>
 
   <div data-role="footer">
   <h1>页脚文本</h1>
-  </div>
+  </div>7
 </div> 
 
 <div data-role="page" id="pagetwo">
   <div data-role="header">
     <h1>新用户注册</h1>
   </div>
+<script>
+  function joinin(){
+    if($("#joininfiled").length==0){
+      $("#createfiled").remove();
+      var txt='    <div id="joininfiled" data-role="fieldcontain">\
+      <label for="familyid">家庭ID</label>\
+      <input type="text" name="familyid" id="familyid" placeholder="要加入的家庭的id" >\
+      <label for="familyuser">创建者用户名</label>\
+      <input type="text" name="familyuser" id="familyuser" placeholder="请输入家庭创建者的用户名" >\
+    </div>'
+    ;
+      $("#registerfiled").append(txt).trigger('create');
+      $("#joinin").html('刚点错了，其实我是想新创建一个家庭的');
+      }else{
+        $("#joininfiled").remove();
+        $("#joinin").html('我要加入别人创建的家庭');
+        var txt='    <div id="createfiled" data-role="fieldcontain">\
+      <label for="familyname">家庭名</label>\
+      <input type="text" name="familyname" id="familyname" placeholder="起一个便于区分的名字吧" >\
+    </div>'
+    ;
+      $("#registerfiled").append(txt).trigger('create');
+      }
+  }
+
+  function checkUser(){
+    var user = $("#user_reg")[0].value;
+    $.get("postdata.php",{ funcname: "checkuser",user:user },function(result){
+    if(result=='0'){
+      $("#user_reg").css("background","#ff5050").trigger('create');
+      $("#submit2").attr('disabled',"true");
+      newalert("用户名已被占用");
+    }else{
+      $("#user_reg").css("background","#50ff50").trigger('create');
+      $("#submit2").attr("disabled",false).trigger('create');
+    }
+    }); 
+  }
+
+	function onSuccess(data, status){
+		data = $.trim(data);
+    hideLoader()//隐藏加载器
+    if(data=='1'){
+      newalert('用户创建成功！<br /> 新家庭创建成功！');
+    }else if(data=='2'){
+      newalert('用户创建成功！<br />家庭加入成！')；
+    }else if(data=='family_not_exist'){
+      newalert('家庭信息填写不正确，请查证<br />用户未创建')
+    }else{
+      newalert('数据库故障');
+    }
+		 }   
+   function onError(data, status){  
+     //$("#notification").text("error");
+     newconfirm('服务器那边好像是出错了<br />要不，再等会儿试试？')
+     hideLoader()//隐藏加载器
+   }
+      
+   $(document).ready(function() {
+     $("#submit2").click(function (){//提交按钮操作
+       showLoader();//显示加载器
+       var formData = $("#callAjaxForm2").serialize();
+       $.ajax({
+         type: "POST",
+         url: "postdata.php",
+         cache: false,
+         data: formData,
+         success: onSuccess,
+         error: onError
+       });
+       return false;
+     });
+   });
+  </script>
+
 
   <div data-role="content" data-theme="e">
-    <label for="user">用户名</label>
-    <input type="text" name="user" id="user" placeholder="请输入用于登录的用户名" >
-    <label for="passwd">密码</label>
-    <input type="password" name="passwd" id="passwd" placeholder="一段尽量长的密码" >
-    <br><br>
+    <form id="callAjaxForm2">
+    <div id="registerfiled" >
+      <div data-role="fieldcontain">
+        <input type="hidden" name="funcname" value='register'>
+        <label for="user_reg">用户名</label>
+        <input type="text" name="user_reg" id="user_reg" placeholder="请输入用于登录的用户名" onblur="checkUser()">
+        <label for="passwd">密码</label>
+        <input type="password" name="passwd" id="passwd" placeholder="一段尽量长的密码" >
+        <label for="name">真实姓名</label>
+        <input type="text" name="name" id="name" placeholder="方便大家区别谁是谁" >
+      </div>
+      <div id="createfiled" data-role="fieldcontain">
+        <label for="familyname">家庭名</label>
+        <input type="text" name="familyname" id="familyname" placeholder="起一个便于区分的名字吧" >
+      </div>
+    </div>
+    
+    
+    <label></label><button data-theme="c" id="submit2" type="submit">注册</button>
+    </form>
+    <label></label><button data-theme="c" id="joinin" type="button" onclick="joinin()">我要加入别人创建的家庭</button>
     
     <a href="#pageone" data-transition="slide">已有账号？直接登录</a>
   </div>

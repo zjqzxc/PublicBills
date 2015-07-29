@@ -43,6 +43,12 @@ function logout() {
         popupDialogObj.attr('data-confirmed', 'yes');
     });
 }
+
+function dellast(){
+  if($('#person div').next().length>2)
+    $("#person div:gt(-6)").remove().trigger('create');
+    else newalert('总得给留一个吧，都给删了是啥意思');
+}
   
  window.onload = function() {
   //get users
@@ -79,6 +85,7 @@ function logout() {
     else {$("#whoami").html("深夜好,")}
     
     $("#whoami").append(result).trigger('create');
+
   });
 }; 
 
@@ -223,8 +230,10 @@ function logout() {
       </div>
       
       <div id="person" class="ui-grid-a">
-        <div class="ui-block-a">付款人：</div>
-<!-- -->
+        <div class="ui-block-a">付款人：<input type ="button" data-inline="true" value="删除最后一个付款人" data-mini="true" onclick="dellast()"></div>
+<!--
+  
+   -->
       </div>
       
       <input type="button" id="btn_addone" onclick="addone()" data-inline="true" value="还有人共同付款">
