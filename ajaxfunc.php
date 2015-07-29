@@ -291,7 +291,7 @@ case 'settlement':
 	$num=count($arr);
 	$arr_record=$arr;
 	$show = Array();
-	for($i=0;$i<$num;$i++){//第一层：从第一个人开始，若为正则收钱，为负则给钱
+	for($i=0;$i<$num;$i++){//第一层：从第一个人开始，为负则给钱
 		if($arr[$i]['money']<0) {
 			while (-$arr[$i]['money']){
 				for($j=0;$j<$num;$j++){
@@ -310,8 +310,9 @@ case 'settlement':
 							$arr[$j]['money']=0;
 						}
 					}else{
-						echo '数据有误，计算无法进行！<br />';
-						break(2);
+						//echo '数据有误，计算无法进行！<br />';
+						//break(2);
+						continue;
 					}
 				}
 				//数据完整性保护，防止while进入死循环。

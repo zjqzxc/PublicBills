@@ -53,9 +53,8 @@ function logout() {
   addone();
   //设置当前日期时间为默认值
   var curr_time = new Date();
-  $("#date").val(curr_time.getFullYear()+"-"+addzero(curr_time.getMonth())+"-"+addzero(curr_time.getDate()));
+  $("#date").val(curr_time.getFullYear()+"-"+addzero(curr_time.getMonth()+1)+"-"+addzero(curr_time.getDate()));
   $("#time").val(addzero(curr_time.getHours())+":"+addzero(curr_time.getMinutes()));
-  
   $.get("postdata.php",{ funcname: "checksettlement" },function(result){
     //alert(result);
     if(result=='no_login') {
