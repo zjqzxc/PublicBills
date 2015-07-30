@@ -197,8 +197,13 @@ function register($arr,$con){
 	$name=$arr['name'];
 	date_default_timezone_set('PRC'); 
 	$time=time();
+	
+	if($user == '') return 'user_empty';
+	if($pwd == '') return 'pwd_empty';
+	if($name == '') return 'name_empty';
 	if(isset($arr['familyname'])){//新建一个家庭
 		$familyname=checkstr($arr['familyname']);
+		if($familyname == '') return 'familyname_empty';
 		$sql = $con -> exec("INSERT INTO config (familyname,admin,datetime) VALUES ('$familyname','$user','$time')");
 		if(!$sql) return 'sql_error1';
 		$sql2 = $con -> query ("SELECT id FROM config WHERE familyname='$familyname' AND admin='$user'");

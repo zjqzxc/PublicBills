@@ -114,14 +114,13 @@
     </form>
 <label> </label>
     <button data-theme="c" id="reg" type="button" onclick="javascript:location.href='#pagetwo'" data-ajax="false" data-transition="slide"> 新用户注册</button>
-
+<label> </label><label>新用户登陆后请首先阅读使用帮助：单击“导航”，在菜单中单击“使用帮助” </label>
   </div>
-
-  </div>
+</div>
 
   <div data-role="footer">
-  <h1>页脚文本</h1>
-  </div>7
+  <h1>公共记账簿 Ver1.0</h1>
+  </div>
 </div> 
 
 <div data-role="page" id="pagetwo">
@@ -167,20 +166,42 @@
     }); 
   }
 
-	function onSuccess(data, status){
+function regHelp(){
+  var txt='新用户注册可选择注册并创建一个家庭或注册并加入一个家庭。加入一个家庭时需要提供家庭号及创建者的用户名，此信息请咨询要加入的家庭组的创建者。家庭号等可在个人信息页面查询。';
+  newalert(txt);
+}
+
+	function onSuccess2(data, status){
 		data = $.trim(data);
     hideLoader()//隐藏加载器
-    if(data=='1'){
-      newalert('用户创建成功！<br /> 新家庭创建成功！');
-    }else if(data=='2'){
-      newalert('用户创建成功！<br />家庭加入成！')；
-    }else if(data=='family_not_exist'){
-      newalert('家庭信息填写不正确，请查证<br />用户未创建')
-    }else{
-      newalert('数据库故障');
+    switch(data)
+    {
+      case 1:
+        newalert('用户创建成功！<br /> 新家庭创建成功！');
+        break;
+      case 2:
+        newalert('用户创建成功！<br />家庭加入成！');
+        break;
+      case 'family_not_exist':
+        newalert('家庭信息填写不正确，请查证<br />用户未创建');
+        break;
+      case 'user_empty':
+        newalert('用户名好像忘写了');
+        break;
+      case 'pwd_empty':
+        newalert('密码都不填，一会儿拿啥登陆');
+        break;
+      case 'name_empty':
+        newalert('敢问阁下尊姓大名？');
+        break;
+      case 'familyname_empty':
+        newalert('您即将创建一个名字为null的家庭，不管你同不同意，我反正是不同意');
+        break;
+      default:
+        newalert('可能发生了数据库错误');
     }
 		 }   
-   function onError(data, status){  
+   function onError2(data, status){  
      //$("#notification").text("error");
      newconfirm('服务器那边好像是出错了<br />要不，再等会儿试试？')
      hideLoader()//隐藏加载器
@@ -195,8 +216,8 @@
          url: "postdata.php",
          cache: false,
          data: formData,
-         success: onSuccess,
-         error: onError
+         success: onSuccess2,
+         error: onError2
        });
        return false;
      });
@@ -228,10 +249,11 @@
     <label></label><button data-theme="c" id="joinin" type="button" onclick="joinin()">我要加入别人创建的家庭</button>
     
     <a href="#pageone" data-transition="slide">已有账号？直接登录</a>
+    <a href="#" onclick="regHelp()">注册说明</a>
   </div>
 
   <div data-role="footer">
-  <h1>页脚文本</h1>
+  <h1>公共记账簿 Ver1.0</h1>
   </div>
 </div> 
 

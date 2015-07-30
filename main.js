@@ -59,7 +59,7 @@ $.get("postdata.php",{ funcname: "settlement" },function(result){
 
 function dosettlement(){
 $.get("postdata.php",{ funcname: "dosettlement" },function(result){
-   newalert(result);
+   //newalert(result);
    if (result==1 ) loadnewpage('settlement');
    else if(result==2 ){
      alert('结算全部完成！');

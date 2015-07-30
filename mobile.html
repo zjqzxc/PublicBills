@@ -95,7 +95,7 @@ function dellast(){
 
 <div data-role="page" id="pageone">
   <div data-role="header" data-position="fixed" data-fullscreen="false">
-    <h1>欢迎来到我的主页</h1>
+    <h2>公共记账簿</h2>
     <div data-role="navbar">
       <ul>
         <li><a href="#" onclick="javascript:window.location.href=document.referrer;" data-icon="home">首页</a></li>
@@ -110,7 +110,7 @@ function dellast(){
   <!-- panel content goes here -->
   <div class="ui-alt-icon ui-nodisc-icon ui-listview">
     <ul class="ui-listview" data-inset="true">
-      <li class="ui-first-child"><a id="whoami" href="#" onclick="" class="ui-btn">欢迎您</a></li>
+      <li class="ui-first-child"><a id="whoami" href="#" onclick="loadnewpage('info')" class="ui-btn">欢迎您</a></li>
       <li><a href="#" onclick="location.reload()" class="ui-btn ui-btn-icon-right ui-icon-carat-r">添加新账单</a></li>
       <li><a href="#" onclick="loadnewpage('appendrecord')" data-ajax="false" class="ui-btn ui-btn-icon-right ui-icon-carat-r">追加付款记录</a></li>
       <li><a href="#" onclick="loadnewpage('history')" data-ajax="false" class="ui-btn ui-btn-icon-right ui-icon-carat-r">查看历史记录</a></li>
@@ -243,10 +243,10 @@ function dellast(){
     </form>
   </div>
 
-<h3 id="notification">数据回显：</h3>
+<h3 hidden=true id="notification">数据回显：</h3>
 
   <div data-role="footer" data-position="fixed" data-fullscreen="true">
-  <h1>©Flagplus</h1>
+  <h1>©Flagplus Ver 1.0</h1>
   </div>
 </div> 
 
