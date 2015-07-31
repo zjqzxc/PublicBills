@@ -47,6 +47,10 @@ function addone(){
 function loadnewpage(name){
   $.get("ajaxfunc.php",{ func: name },function(result){
     $("#mainpage").html(result).trigger('create');
+    
+    var curr_time = new Date();
+    $("#date").val(curr_time.getFullYear()+"-"+addzero(curr_time.getMonth()+1)+"-"+addzero(curr_time.getDate()));
+    $("#time").val(addzero(curr_time.getHours())+":"+addzero(curr_time.getMinutes()));
   }); 
 }
 

@@ -3,6 +3,7 @@ require_once 'conn.php';
 $family=isset($_SESSION['family'])?$_SESSION['family']:null;
 $user=isset($_SESSION['user'])?$_SESSION['user']:null;
 
+
 if($user!='') $func=$_REQUEST['func'];
 else die('登陆不合法');
 
@@ -281,22 +282,25 @@ case 'settlement':
 	}
 	//print_r($arr);
 
-	/*//测试数组
-	$arr=array(
-		array("money"=>"10","name"=>"name1"),
-		array("money"=>"-15","name"=>"name2"),
-		array("money"=>"-15","name"=>"name3"),
-		array("money"=>"1","name"=>"name4")
+	//测试数组
+	
+	/*$arr=array(
+		array("money"=>"1250","name"=>"name1"),
+		array("money"=>"50","name"=>"name2"),
+		array("money"=>"-400","name"=>"name3"),
+		array("money"=>"0","name"=>"name4"),
+		array("money"=>"-450","name"=>"name5"),
+		array("money"=>"-450","name"=>"name6")
 	);*/
 	$num=count($arr);
 	$arr_record=$arr;
 	$show = Array();
 	for($i=0;$i<$num;$i++){//第一层：从第一个人开始，为负则给钱
 		if($arr[$i]['money']<0) {
-			while (-$arr[$i]['money']){
+			while ($arr[$i]['money']){
 				for($j=0;$j<$num;$j++){
 					if($arr[$j]['money']>0){//第二层循环：找到值为正的人，即应该收其他人付钱的人
-						if($arr[$j]['money']>=(-$arr[$i]['money'])){
+						if($arr[$j]['money']>abs($arr[$i]['money'])){
 							//echo $arr[$i]['name'].'>>'.$arr[$j]['name'].'  '.-$arr[$i]['money'].'<br />';
 							$show[]=array($arr[$i]['name'],$arr[$j]['name'],-$arr[$i]['money']);
 							$arr[$j]['money']+=$arr[$i]['money'];
@@ -305,7 +309,7 @@ case 'settlement':
 							//print_r($arr);
 						}else{
 							//echo $arr[$i]['name'].'>>'.$arr[$j]['name'].'  '.$arr[$j]['money'].'<br />';
-							$show[]=array($arr[$j]['name'],$arr[$i]['name'],$arr[$j]['money']);
+							$show[]=array($arr[$i]['name'],$arr[$j]['name'],$arr[$j]['money']);
 							$arr[$i]['money']+=$arr[$j]['money'];
 							$arr[$j]['money']=0;
 						}
@@ -330,6 +334,7 @@ case 'settlement':
 			}
 		}
 	}
+	//print_r($show);
 	$txt='<h3>回顾(从上次结算至今)</h3>
 	';
 	foreach ($arr_record as $value){

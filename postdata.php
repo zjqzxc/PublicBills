@@ -16,7 +16,7 @@ $arr=$_REQUEST;
 
 function login($arr,$con){
 	$user=$arr['user'];
-	$pwd=$arr['pwd'];
+	$pwd= md5($arr['pwd']);
 	$sql = $con -> query("SELECT id,family FROM user WHERE user='$user' AND passwd='$pwd'");
 	$rs1 = $sql ->fetch();
 	if(empty($rs1))
@@ -193,13 +193,13 @@ function register($arr,$con){
 	 * 'family_not_exist':家庭不存在
 	 */
 	$user=$arr['user_reg'];
-	$pwd=$arr['passwd'];
+	$pwd=md5($arr['passwd']);
 	$name=$arr['name'];
 	date_default_timezone_set('PRC'); 
 	$time=time();
 	
 	if($user == '') return 'user_empty';
-	if($pwd == '') return 'pwd_empty';
+	if($arr['passwd'] == '') return 'pwd_empty';
 	if($name == '') return 'name_empty';
 	if(isset($arr['familyname'])){//新建一个家庭
 		$familyname=checkstr($arr['familyname']);
@@ -222,7 +222,7 @@ function register($arr,$con){
 		if($rs){
 			$familyid=$rs['id'];
 			$sql = $con -> exec("INSERT INTO user (user,passwd,name,family) VALUES ('$user','$pwd','$name','$familyid')");
-			if(!$sql) return 'sql_error2';
+			if(!$sql) return 'sql_error3';
 		}else{
 			return 'family_not_exist';
 		}
